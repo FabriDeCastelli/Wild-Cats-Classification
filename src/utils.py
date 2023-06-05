@@ -7,6 +7,7 @@ from keras.models import save_model, load_model
 # ------------ Assignment 2 imports ---------------
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
+from keras.src.optimizers import Adam
 from scipy.stats import ttest_rel
 
 
@@ -130,7 +131,7 @@ def plot_history(history):
     plt.show()
 
 
-def create_FFNN(input_shape):
+def create_FFNN(input_shape = (224, 224, 3)):
     """
     Creates a Feed Forward NN model.
     :return: the created FFNN model.
@@ -144,28 +145,26 @@ def create_FFNN(input_shape):
     return model
 
 
-def create_cnn():
-    """
-    Creates a Convolutional NN model.
-    :return: the created CNN model.
-    """
+def create_cnn(pool_size=(3, 3), learning_rate=0.002, neurons_dense1=64, neurons_dense2=64):
     conv_model = Sequential()
     # Convolutional layers
     conv_model.add(Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', input_shape=(224, 224, 3)))
-    conv_model.add(MaxPooling2D(pool_size=(2, 2)))
+    conv_model.add(MaxPooling2D(pool_size=pool_size))
 
     conv_model.add(Conv2D(filters=64, kernel_size=3, strides=1, activation='relu'))
-    conv_model.add(MaxPooling2D(pool_size=(2, 2)))
+    conv_model.add(MaxPooling2D(pool_size=pool_size))
 
     conv_model.add(Conv2D(filters=128, kernel_size=3, strides=1, activation='relu'))
-    conv_model.add(MaxPooling2D(pool_size=(2, 2)))
+    conv_model.add(MaxPooling2D(pool_size=pool_size))
 
     # Classifier
     conv_model.add(Flatten())
-    conv_model.add(Dense(256, activation='relu'))
-    conv_model.add(Dense(128, activation='relu'))
+    conv_model.add(Dense(neurons_dense1, activation='relu'))
+    conv_model.add(Dense(neurons_dense2, activation='relu'))
     conv_model.add(Dense(7, activation='softmax'))
-    conv_model.compile(optimizer='adam', loss="categorical_crossentropy", metrics=["accuracy"])
+
+    optimizer = Adam(learning_rate=learning_rate)
+    conv_model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"])
     return conv_model
 
 
