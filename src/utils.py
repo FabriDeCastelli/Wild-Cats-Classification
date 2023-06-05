@@ -7,6 +7,7 @@ from keras.models import save_model, load_model
 # ------------ Assignment 2 imports ---------------
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
+from scipy.stats import ttest_rel
 
 
 def load_imgs(path, folders):
@@ -166,3 +167,26 @@ def create_cnn():
     conv_model.add(Dense(7, activation='softmax'))
     conv_model.compile(optimizer='adam', loss="categorical_crossentropy", metrics=["accuracy"])
     return conv_model
+
+
+def perform_paired_T_Test(model1_predictions, model2_predictions, y_test):
+    """
+    Performs a paired T-Test on the predictions of two models.
+    :param model1_predictions:  predictions of the first model.
+    :param model2_predictions:  predictions of the second model.
+    :param y_test:              targets in the test set.
+    :return:
+    """
+    predicted_labels_model1 = np.argmax(model1_predictions, axis=1)
+    predicted_labels_model1 = np.eye(7)[predicted_labels_model1]
+    e_model2 = (predicted_labels_model1[:] == y_test[:] )\
+        .all(axis=1)\
+        .astype(int)
+
+    predicted_labels_model2 = np.argmax(model2_predictions, axis=1)
+    predicted_labels_model2 = np.eye(7)[predicted_labels_model2]
+    e_model1 = (predicted_labels_model2[:] == y_test[:])\
+        .all(axis=1)\
+        .astype(int)
+
+    return ttest_rel(e_model1, e_model2)
