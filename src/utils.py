@@ -130,13 +130,13 @@ def plot_history(history):
     plt.show()
 
 
-def create_FFNN():
+def create_FFNN(input_shape):
     """
     Creates a Feed Forward NN model.
     :return: the created FFNN model.
     """
     model = Sequential()
-    model.add(Flatten(input_shape=(224, 224, 3)))
+    model.add(Flatten(input_shape=input_shape))
     model.add(Dense(128, activation='relu'))
     model.add(Dense(64, activation='relu'))
     model.add(Dense(7, activation='softmax'))
@@ -175,7 +175,7 @@ def perform_paired_T_Test(model1_predictions, model2_predictions, y_test):
     :param model1_predictions:  predictions of the first model.
     :param model2_predictions:  predictions of the second model.
     :param y_test:              targets in the test set.
-    :return:
+    :return:                    T and p-value of the test.
     """
     predicted_labels_model1 = np.argmax(model1_predictions, axis=1)
     predicted_labels_model1 = np.eye(7)[predicted_labels_model1]
