@@ -145,7 +145,7 @@ def create_FFNN(input_shape = (224, 224, 3)):
     return model
 
 
-def create_cnn(pool_size=(3, 3), learning_rate=0.002, neurons_dense1=64, neurons_dense2=64):
+def create_cnn(pool_size=(4, 4), learning_rate=0.001, neurons_dense1=64, neurons_dense2=64):
     conv_model = Sequential()
     # Convolutional layers
     conv_model.add(Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', input_shape=(224, 224, 3)))
