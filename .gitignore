@@ -167,3 +167,4 @@ cython_debug/
 /Wild Cats Dataset/
 /deliverable/*.h5
 /logs
+/results/*
