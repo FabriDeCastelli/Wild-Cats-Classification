@@ -1,0 +1,26 @@
+filters: [
+    [16, 32],
+    [32, 64],
+    [64, 128]
+]
+
+activations: [
+    ['relu'],
+    ['relu'],
+    ['relu', 'tanh', 'sigmoid']
+]
+
+kernel_size: [3, 5, 7]
+
+strides: [1]
+
+pool_size: [2, 4]
+
+neurons_dense1: [64, 128]
+activations_dense1: ['relu']
+neurons_dense2: [32, 64]
+activations_dense2: ['relu', 'tanh']
+
+learning_rate: [0.0001, 0.0003, 0.0005, 0.0007, 0.001]
+batch_size: [64, 32]
+epochs: [50]

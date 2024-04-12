@@ -1,14 +1,14 @@
 import os
 from PIL import Image
 import matplotlib.pyplot as plt
-import numpy as np
-from keras.models import save_model, load_model
+from numpy import eye, random, asarray, argmax, array, ndarray, zeros
+from tensorflow.keras.models import save_model, load_model
 
 # ------------ Assignment 2 imports ---------------
 from keras.models import Sequential
-from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
-from keras.src.optimizers import Adam
+from keras.layers import Dense
 from scipy.stats import ttest_rel
+import yaml
 
 
 def load_imgs(path, folders):
@@ -34,13 +34,13 @@ def plot_sample(imgs, labels, nrows=4, ncols=4, resize=None):
     # create a grid of images
     fig, axs = plt.subplots(nrows, ncols, figsize=(4 * ncols, 4 * nrows))
     # take a random sample of images
-    indices = np.random.choice(len(imgs), size=nrows * ncols, replace=False)
+    indices = random.choice(len(imgs), size=nrows * ncols, replace=False)
     for ax, idx in zip(axs.reshape(-1), indices):
         ax.axis('off')
         # sample an image
         ax.set_title(labels[idx])
         im = imgs[idx]
-        if isinstance(im, np.ndarray):
+        if isinstance(im, ndarray):
             im = Image.fromarray(im)
         if resize is not None:
             im = im.resize(resize)
@@ -76,15 +76,15 @@ def make_dataset(imgs, labels, label_map, img_size):
     for im, l in zip(imgs, labels):
         # preprocess img
         x_i = im.resize(img_size)
-        x_i = np.asarray(x_i)
+        x_i = asarray(x_i)
 
         # encode label
-        y_i = np.zeros(n_classes)
+        y_i = zeros(n_classes)
         y_i[label_map[l]] = 1.
 
         x.append(x_i)
         y.append(y_i)
-    return np.array(x).astype('float32'), np.array(y)
+    return array(x).astype('float32'), array(y)
 
 
 def save_keras_model(model, filename):
@@ -131,43 +131,6 @@ def plot_history(history):
     plt.show()
 
 
-def create_FFNN(input_shape = (224, 224, 3)):
-    """
-    Creates a Feed Forward NN model.
-    :return: the created FFNN model.
-    """
-    model = Sequential()
-    model.add(Flatten(input_shape=input_shape))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(7, activation='softmax'))
-    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
-    return model
-
-
-def create_cnn(pool_size=(4, 4), learning_rate=0.001, neurons_dense1=64, neurons_dense2=64):
-    conv_model = Sequential()
-    # Convolutional layers
-    conv_model.add(Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', input_shape=(224, 224, 3)))
-    conv_model.add(MaxPooling2D(pool_size=pool_size))
-
-    conv_model.add(Conv2D(filters=64, kernel_size=3, strides=1, activation='relu'))
-    conv_model.add(MaxPooling2D(pool_size=pool_size))
-
-    conv_model.add(Conv2D(filters=128, kernel_size=3, strides=1, activation='relu'))
-    conv_model.add(MaxPooling2D(pool_size=pool_size))
-
-    # Classifier
-    conv_model.add(Flatten())
-    conv_model.add(Dense(neurons_dense1, activation='relu'))
-    conv_model.add(Dense(neurons_dense2, activation='relu'))
-    conv_model.add(Dense(7, activation='softmax'))
-
-    optimizer = Adam(learning_rate=learning_rate)
-    conv_model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"])
-    return conv_model
-
-
 def perform_paired_T_Test(model1_predictions, model2_predictions, y_test):
     """
     Performs a paired T-Test on the predictions of two models.
@@ -176,16 +139,29 @@ def perform_paired_T_Test(model1_predictions, model2_predictions, y_test):
     :param y_test:              targets in the test set.
     :return:                    T and p-value of the test.
     """
-    predicted_labels_model1 = np.argmax(model1_predictions, axis=1)
-    predicted_labels_model1 = np.eye(7)[predicted_labels_model1]
-    e_model2 = (predicted_labels_model1[:] == y_test[:] )\
-        .all(axis=1)\
+    predicted_labels_model1 = argmax(model1_predictions, axis=1)
+    predicted_labels_model1 = eye(7)[predicted_labels_model1]
+    e_model2 = (predicted_labels_model1[:] == y_test[:]) \
+        .all(axis=1) \
         .astype(int)
 
-    predicted_labels_model2 = np.argmax(model2_predictions, axis=1)
-    predicted_labels_model2 = np.eye(7)[predicted_labels_model2]
-    e_model1 = (predicted_labels_model2[:] == y_test[:])\
-        .all(axis=1)\
+    predicted_labels_model2 = argmax(model2_predictions, axis=1)
+    predicted_labels_model2 = eye(7)[predicted_labels_model2]
+    e_model1 = (predicted_labels_model2[:] == y_test[:]) \
+        .all(axis=1) \
         .astype(int)
 
     return ttest_rel(e_model1, e_model2)
+
+
+def read_yaml(path):
+    """
+    Reads a file in .yaml format.
+
+    :param path: the path of the file to read
+    :return: the dictionary contained in the file
+    """
+    with open(path, "r") as file:
+        dictionary = yaml.load(file, Loader=yaml.FullLoader)
+
+    return dictionary
